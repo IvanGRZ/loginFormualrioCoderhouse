@@ -6,6 +6,8 @@ import logger from 'morgan';
 import dotenv from 'dotenv'
 import { createServer } from 'http';
 import { Server } from "socket.io";
+
+import mongooseConnect from './src/services/models/connect.js';
 import router from './src/routes/index.js'
 import { getStoreConfig } from './src/services/session/config.js';
 
@@ -20,7 +22,11 @@ const io = new Server(http);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(logger('tiny'));
+
+mongooseConnect();
+
 app.use(cookieParser(COOKIE_SECRET));
+
 app.use(session({
     store: MongoStore.create(getStoreConfig()),
     secret: COOKIE_SECRET,
@@ -32,10 +38,12 @@ app.use(session({
     }
 }));
 
-app.use('/api', router);
+app.set('view engine', 'ejs');
+app.set('views', './public/views');
+
+app.use(router);
 //app.use(express.static('./public'));
-app.use(express.static('./public/fakers'));
-app.use(express.static('./public/messageCenter'));
+//app.use(express.static('./public/messageCenter'));
 
 const products = []
 const messages = []
